@@ -268,23 +268,24 @@ export default function Filters({ filters, onChange, forceOpen = false, onForceC
         </div>
       )}
 
-      {/* Mobile-only floating Filtra button — minimal ghost style */}
-      <div className="sm:hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+      {/* Mobile-only floating Filtra button — circular FAB, safe-area aware */}
+      <div className="sm:hidden fixed left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+           style={{ bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))' }}>
         <button
           onClick={() => setOpen(true)}
-          className="pointer-events-auto flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium transition-all active:scale-95"
+          aria-label="Hap filtrat"
+          className="pointer-events-auto relative flex items-center justify-center rounded-full transition-all active:scale-90"
           style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            color: 'var(--text-2)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+            width: '58px',
+            height: '58px',
+            background: 'linear-gradient(145deg,#ef4444,#b91c1c)',
+            boxShadow: '0 8px 24px rgba(220,38,38,0.45), 0 2px 8px rgba(0,0,0,0.3)',
           }}
         >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-          Filtra
+          <SlidersHorizontal className="w-6 h-6 text-white" />
           {activeCount > 0 && (
-            <span className="text-[10px] font-bold font-mono bg-red-600 text-white px-1.5 py-0.5 rounded-full leading-none">
+            <span className="absolute -top-1 -right-1 flex items-center justify-center text-[11px] font-bold font-mono text-white rounded-full"
+                  style={{ width: '22px', height: '22px', background: '#0c0c1c', border: '2px solid var(--bg-page)' }}>
               {activeCount}
             </span>
           )}
