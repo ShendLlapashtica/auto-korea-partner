@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { X, Calculator, Sun, Moon, ChevronRight } from 'lucide-react';
 import { useEffect } from 'react';
-import { Logo } from './Logo.jsx';
 
 export default function MobileMenu({ onClose, onOpenCalc, country, setCountry, dark, toggleTheme }) {
   useEffect(() => {
@@ -18,7 +17,9 @@ export default function MobileMenu({ onClose, onOpenCalc, country, setCountry, d
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
-          <Logo size="text-lg" />
+          <span className="bg-black rounded-lg px-2 py-1 inline-flex">
+            <img src="/logo.png" alt="AUTO VG" className="h-7 w-auto" />
+          </span>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full btn-ghost" style={{ color: 'var(--text-1)' }}>
             <X className="w-4 h-4" />
           </button>

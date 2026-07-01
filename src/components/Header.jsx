@@ -5,7 +5,6 @@ import { useCountry } from '../contexts/CountryContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import CustomsCalculator from './CustomsCalculator.jsx';
 import MobileMenu from './MobileMenu.jsx';
-import { Logo } from './Logo.jsx';
 
 const BRANDS = [
   'BMW','Mercedes-Benz','Audi','Volkswagen','Porsche',
@@ -94,8 +93,8 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center gap-2 h-14">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center group select-none flex-shrink-0 mr-2">
-            <Logo />
+          <Link to="/" className="flex items-center group select-none flex-shrink-0 mr-2 bg-black rounded-lg px-2 py-1">
+            <img src="/logo.png" alt="AUTO VG" className="h-8 w-auto" />
           </Link>
 
           {/* Search — desktop */}
