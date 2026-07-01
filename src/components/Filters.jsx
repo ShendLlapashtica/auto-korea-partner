@@ -234,10 +234,10 @@ export default function Filters({ filters, onChange, forceOpen = false, onForceC
 
       {/* Full-screen drawer — mobile only */}
       {open && (
-        <div className="sm:hidden fixed inset-0 z-[100] flex flex-col justify-end">
+        <div className="sm:hidden fixed inset-0 z-[100]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
-          <div className="relative rounded-t-2xl p-5 pb-8 shadow-2xl animate-slide-up w-full max-h-[85vh] overflow-y-auto"
-               style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderBottom: 'none' }}>
+          <div className="fixed bottom-0 left-0 right-0 rounded-t-2xl p-5 pb-8 shadow-2xl animate-slide-up overflow-y-auto"
+               style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderBottom: 'none', maxHeight: '85vh' }}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-base" style={{ color: 'var(--text-1)' }}>
                 Filtra
