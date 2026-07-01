@@ -102,8 +102,13 @@ export default function Home() {
       if (kw) {
         params.set('q', kw);
       } else {
-        Object.entries(flt).forEach(([k, v]) => v && params.set(k, v));
+        if (flt.manufacturer) params.set('manufacturer', flt.manufacturer);
+        if (flt.model)        params.set('model', flt.model);
       }
+      if (flt.fuel)      params.set('fuel', flt.fuel);
+      if (flt.yearFrom)  params.set('yearFrom', flt.yearFrom);
+      if (flt.yearTo)    params.set('yearTo', flt.yearTo);
+      if (flt.mileageTo) params.set('mileageTo', flt.mileageTo);
 
       const r    = await fetch(`/api/cars?${params}`);
       const data = await r.json();

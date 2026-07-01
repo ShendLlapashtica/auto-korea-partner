@@ -87,44 +87,47 @@ const FUEL_MAP = {
   lpg:      'LPG',
 };
 
+// Case-insensitive dictionary lookup — returns the matched dictionary key, or null.
+function findKey(dict, val) {
+  if (Object.prototype.hasOwnProperty.call(dict, val)) return val;
+  return Object.keys(dict).find(k => k.toLowerCase() === val.toLowerCase()) || null;
+}
+
 function toEncarManufacturer(val) {
   if (!val) return null;
-  return MANUFACTURER_REVERSE[val] || MANUFACTURER_REVERSE[
-    Object.keys(MANUFACTURER_REVERSE).find(k => k.toLowerCase() === val.toLowerCase())
-  ] || val;
+  const key = findKey(MANUFACTURER_REVERSE, val);
+  return key ? MANUFACTURER_REVERSE[key] : val;
 }
 
+// Models not in the Korean-market dictionary are almost always alphanumeric
+// export codes (X5, A4, RS6, C200...) that Encar stores upper-cased.
 function toEncarModel(val) {
   if (!val) return null;
-  return MODEL_REVERSE[val] || MODEL_REVERSE[
-    Object.keys(MODEL_REVERSE).find(k => k.toLowerCase() === val.toLowerCase())
-  ] || val;
+  const key = findKey(MODEL_REVERSE, val);
+  return key ? MODEL_REVERSE[key] : val.toUpperCase();
 }
 
-// Parse a free-text keyword like "Hyundai Tucson" or "BMW X5" into filter parts
+// Parse a free-text keyword like "hyundai tucson" or "bmw x5" into filter parts.
+// Matching is case-insensitive throughout so natural, lowercase typing works.
+// `remainder` keeps the raw (unmapped) leftover text for the substring fallback.
 function parseKeyword(keyword) {
   if (!keyword) return {};
-  const parts  = keyword.trim().split(/\s+/);
-  const result = {};
+  const parts = keyword.trim().split(/\s+/);
 
-  // Check if first word(s) match a manufacturer
+  // Check if the first word(s) match a manufacturer (longest match wins)
   for (let len = Math.min(parts.length, 3); len >= 1; len--) {
     const candidate = parts.slice(0, len).join(' ');
-    const mapped    = toEncarManufacturer(candidate);
-    if (mapped && (MANUFACTURER_REVERSE[candidate] || candidate === 'BMW')) {
-      result.manufacturer = mapped;
-      const rest = parts.slice(len).join(' ');
-      if (rest) result.model = toEncarModel(rest) || rest;
+    const key = findKey(MANUFACTURER_REVERSE, candidate);
+    if (key) {
+      const rest   = parts.slice(len).join(' ');
+      const result = { manufacturer: MANUFACTURER_REVERSE[key] };
+      if (rest) { result.model = toEncarModel(rest); result.remainder = rest; }
       return result;
     }
   }
 
-  // Fallback: treat whole keyword as model search
-  const mapped = toEncarModel(keyword.trim());
-  if (mapped !== keyword.trim()) result.model = mapped;
-  else result.model = keyword.trim();
-
-  return result;
+  // No manufacturer recognized — treat the whole keyword as a model/badge search
+  return { model: toEncarModel(keyword.trim()), remainder: keyword.trim() };
 }
 
 async function attempt(fetchUrl, isWrapped, signal, label, extraHeaders = {}) {
@@ -146,6 +149,58 @@ async function attempt(fetchUrl, isWrapped, signal, label, extraHeaders = {}) {
   return data;
 }
 
+async function runSearch(parts, offset, count, signal) {
+  const filter = parts.length > 0
+    ? `(And.Hidden.N._.${parts.join('._.')}.)`
+    : `(And.Hidden.N.)`;
+
+  const encarUrl = `https://api.encar.com/search/car/list/general?${new URLSearchParams({
+    count: 'true',
+    q:     filter,
+    sr:    `|ModifiedDate|${offset}|${count}`,
+    inav:  '|Metadata|Sort',
+  })}`;
+  const enc = encodeURIComponent(encarUrl);
+
+  return Promise.any([
+    attempt(encarUrl,                                          false, signal, 'direct',    BROWSER_HEADERS),
+    attempt(`https://api.allorigins.win/get?url=${enc}`,       true,  signal, 'allorigins', {}),
+    attempt(`https://corsproxy.io/?${enc}`,                    false, signal, 'corsproxy',  {}),
+    attempt(`https://api.codetabs.com/v1/proxy?quest=${enc}`,  false, signal, 'codetabs',   {}),
+  ]);
+}
+
+// Last-resort fallback for free text that doesn't map onto an exact Encar
+// facet value (e.g. "1 Series", "Ser", or any other partial/loose term):
+// scan a broad recent batch and keep whatever actually contains the words
+// typed, instead of dead-ending with zero results.
+function textMatches(car, terms) {
+  const haystack = [car.Manufacturer, car.Model, car.Badge, car.BadgeDetail]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return terms.some(t => haystack.includes(t));
+}
+
+async function substringSearch(keyword, manufacturer, offset, count, signal) {
+  const scanParts = manufacturer ? [`Manufacturer.${manufacturer}`] : [];
+  const broad      = await runSearch(scanParts, 0, 500, signal);
+
+  // Single short tokens (e.g. "X" meant to catch X3/X5/X6) are kept as-is;
+  // in multi-word queries a bare 1-char token (e.g. the "1" in "1 Series")
+  // is too noisy to be useful, so it's dropped in favor of the real words.
+  const allTerms = keyword.toLowerCase().split(/\s+/).filter(Boolean);
+  const terms    = allTerms.length > 1 ? allTerms.filter(t => t.length >= 2) : allTerms;
+  const useTerms = terms.length ? terms : allTerms;
+
+  const matched = broad.SearchResults.filter(car => textMatches(car, useTerms));
+
+  return {
+    Count:         matched.length,
+    SearchResults: matched.slice(offset, offset + count),
+  };
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -158,69 +213,79 @@ export default async function handler(req, res) {
   const count  = Math.min(500, Math.max(1, parseInt(q.count ?? '24')));
   const offset = page * count;
 
-  // Build filter parts
-  const parts = [];
+  // Identity filter (manufacturer/model) — kept separate from the rest so we
+  // can retry with a looser filter if the exact combo comes back empty.
+  const rawKeyword = (q.q || q.keyword || q.search || '').trim();
+  let manufacturer = null;
+  let model        = null;
+  let remainder    = null; // raw leftover text, used only by the substring fallback
 
-  // Keyword search: "BMW X5" or "Hyundai Tucson"
-  if (q.q || q.keyword || q.search) {
-    const kw     = (q.q || q.keyword || q.search).trim();
-    const parsed = parseKeyword(kw);
-    if (parsed.manufacturer) parts.push(`Manufacturer.${parsed.manufacturer}`);
-    if (parsed.model)        parts.push(`Model.${parsed.model}`);
+  if (rawKeyword) {
+    const parsed = parseKeyword(rawKeyword);
+    manufacturer = parsed.manufacturer || null;
+    model        = parsed.model        || null;
+    remainder    = parsed.remainder    || null;
   } else {
-    // Individual filter params
-    if (q.manufacturer) {
-      const encar = toEncarManufacturer(q.manufacturer);
-      parts.push(`Manufacturer.${encar}`);
-    }
-    if (q.model) {
-      const encar = toEncarModel(q.model);
-      parts.push(`Model.${encar}`);
-    }
+    if (q.manufacturer) manufacturer = toEncarManufacturer(q.manufacturer);
+    if (q.model)         model        = toEncarModel(q.model);
   }
+
+  // Filters shared by every attempt (fuel/year/mileage/price)
+  const commonParts = [];
 
   if (q.fuel) {
     const mapped = FUEL_MAP[q.fuel.toLowerCase().trim()] ?? q.fuel;
-    parts.push(`FuelType.${mapped}`);
+    commonParts.push(`FuelType.${mapped}`);
   }
 
   if (q.yearFrom || q.yearTo) {
     // Year field is YYYYMM (e.g. 201405), so convert 4-digit year to 6-digit range
     const from = (q.yearFrom ?? '2000') + '00';
     const to   = (q.yearTo   ?? '2030') + '99';
-    parts.push(`Year.range(${from}..${to})`);
+    commonParts.push(`Year.range(${from}..${to})`);
   }
 
   if (q.mileageFrom || q.mileageTo) {
-    parts.push(`Mileage.range(${q.mileageFrom ?? 0}..${q.mileageTo ?? 9999999})`);
+    commonParts.push(`Mileage.range(${q.mileageFrom ?? 0}..${q.mileageTo ?? 9999999})`);
   }
 
   if (q.priceFrom || q.priceTo) {
-    parts.push(`Price.range(${q.priceFrom ?? 0}..${q.priceTo ?? 999999})`);
+    commonParts.push(`Price.range(${q.priceFrom ?? 0}..${q.priceTo ?? 999999})`);
   }
 
-  const filter = parts.length > 0
-    ? `(And.Hidden.N._.${parts.join('._.')}.)`
-    : `(And.Hidden.N.)`;
-
-  const encarUrl = `https://api.encar.com/search/car/list/general?${new URLSearchParams({
-    count: 'true',
-    q:     filter,
-    sr:    `|ModifiedDate|${offset}|${count}`,
-    inav:  '|Metadata|Sort',
-  })}`;
+  const identityParts = [];
+  if (manufacturer) identityParts.push(`Manufacturer.${manufacturer}`);
+  if (model)        identityParts.push(`Model.${model}`);
 
   const ctrl  = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 9000);
-  const enc   = encodeURIComponent(encarUrl);
 
   try {
-    const data = await Promise.any([
-      attempt(encarUrl,                                           false, ctrl.signal, 'direct',    BROWSER_HEADERS),
-      attempt(`https://api.allorigins.win/get?url=${enc}`,       true,  ctrl.signal, 'allorigins', {}),
-      attempt(`https://corsproxy.io/?${enc}`,                    false, ctrl.signal, 'corsproxy',  {}),
-      attempt(`https://api.codetabs.com/v1/proxy?quest=${enc}`,  false, ctrl.signal, 'codetabs',   {}),
-    ]);
+    let data = await runSearch([...identityParts, ...commonParts], offset, count, ctrl.signal);
+
+    // Nothing matched the exact facet filter — progressively broaden instead
+    // of dead-ending with zero results:
+    //   1. Brand recognized + leftover text ("BMW X" / "BMW X5") → scan that
+    //      brand's recent listings for the leftover text (catches X3/X5/X6...).
+    //   2. Still nothing but brand is known → show the whole brand.
+    //   3. No brand recognized at all ("X5", "X", "1 Series", "Ser") → scan
+    //      everything for the typed text.
+    //   4. Truly nothing matched anywhere → show recent listings rather than
+    //      a hard empty state.
+    if (data.SearchResults.length === 0 && rawKeyword) {
+      if (manufacturer && remainder) {
+        data = await substringSearch(remainder, manufacturer, offset, count, ctrl.signal);
+      }
+      if (data.SearchResults.length === 0 && manufacturer) {
+        data = await runSearch([`Manufacturer.${manufacturer}`, ...commonParts], offset, count, ctrl.signal);
+      }
+      if (data.SearchResults.length === 0 && !manufacturer) {
+        data = await substringSearch(rawKeyword, null, offset, count, ctrl.signal);
+      }
+      if (data.SearchResults.length === 0) {
+        data = await runSearch(commonParts, offset, count, ctrl.signal);
+      }
+    }
 
     clearTimeout(timer);
     return res.status(200).json({

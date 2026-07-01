@@ -119,7 +119,7 @@ export default function Header() {
                 onClick={() => setCountry('AL')}
                 title="Shqipëri – çmim Durrës"
                 className={`px-2.5 py-1.5 text-base leading-none transition-all
-                  ${country === 'AL' ? 'bg-red-600' : 'hover:bg-card2'}`}
+                  ${country === 'AL' ? 'bg-red-600 shadow-[0_0_0_1px_rgba(220,38,38,0.4)]' : 'hover:bg-card2'}`}
               >
                 🇦🇱
               </button>
@@ -127,27 +127,21 @@ export default function Header() {
                 onClick={() => setCountry('XK')}
                 title="Kosovë – çmim Prishtinë"
                 className={`px-2.5 py-1.5 text-base leading-none transition-all
-                  ${country === 'XK' ? 'bg-red-600' : 'hover:bg-card2'}`}
+                  ${country === 'XK' ? 'bg-red-600 shadow-[0_0_0_1px_rgba(220,38,38,0.4)]' : 'hover:bg-card2'}`}
               >
                 🇽🇰
               </button>
             </div>
 
-            {/* Dogane */}
-            <button
-              onClick={() => setCalc(true)}
-              className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium btn-ghost"
-            >
-              <span>⚖️</span> Doganë
-            </button>
-
             {/* Theme toggle — icon only */}
             <button
               onClick={toggle}
               title={dark ? 'Light mode' : 'Dark mode'}
-              className="hidden sm:flex w-8 h-8 items-center justify-center rounded-xl btn-ghost text-base"
+              className="hidden sm:flex w-8 h-8 items-center justify-center rounded-xl btn-ghost text-base p-0"
             >
-              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {dark
+                ? <Sun className="w-5 h-5" style={{ color: 'var(--text-1)' }} />
+                : <Moon className="w-5 h-5" style={{ color: 'var(--text-1)' }} />}
             </button>
 
             <a href="https://wa.me/38348407634" target="_blank" rel="noopener noreferrer"
@@ -158,7 +152,7 @@ export default function Header() {
             {/* Mobile: search icon */}
             <button
               onClick={() => setShowSearch(s => !s)}
-              className="sm:hidden flex w-9 h-9 items-center justify-center rounded-xl btn-ghost text-base"
+              className="sm:hidden flex w-9 h-9 items-center justify-center rounded-xl btn-ghost text-base p-0"
             >
               {showSearch ? <X className="w-4 h-4" /> : '🔍'}
             </button>
@@ -166,7 +160,7 @@ export default function Header() {
             {/* Mobile: burger → X when menu open */}
             <button
               onClick={() => setMenu(o => !o)}
-              className="sm:hidden flex w-9 h-9 items-center justify-center rounded-xl btn-ghost"
+              className="sm:hidden flex w-9 h-9 items-center justify-center rounded-xl btn-ghost p-0"
               aria-label={menu ? 'Mbyll menunë' : 'Hap menunë'}
             >
               {menu ? (

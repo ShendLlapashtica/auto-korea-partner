@@ -43,7 +43,7 @@ export default function CustomsCalculator({ onClose }) {
             <h2 className="text-base font-bold" style={{ color: 'var(--text-1)' }}>Kalkulatori i Doganës</h2>
           </div>
           <button onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center rounded-full btn-ghost"
+                  className="w-8 h-8 flex items-center justify-center rounded-full btn-ghost p-0"
                   style={{ color: 'var(--text-1)' }}>
             <X className="w-4 h-4" />
           </button>

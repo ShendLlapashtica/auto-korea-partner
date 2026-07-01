@@ -194,7 +194,7 @@ export default function Filters({ filters, onChange, forceOpen = false, onForceC
                   </span>
                 )}
               </h3>
-              <button onClick={close} className="w-8 h-8 flex items-center justify-center rounded-full btn-ghost" style={{ color: 'var(--text-1)' }}>
+              <button onClick={close} className="w-8 h-8 flex items-center justify-center rounded-full btn-ghost p-0" style={{ color: 'var(--text-1)' }}>
                 <X className="w-4 h-4" />
               </button>
             </div>
