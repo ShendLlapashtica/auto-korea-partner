@@ -215,11 +215,19 @@ export function carPhotoUrl(car, idx = 0) {
   return null;
 }
 
+// Encar's CDN serves a small ~640x360 image by default. Requesting the
+// impolicy=heightRate variant returns the same photo at up to 1600x1200 —
+// verified directly against ci.encar.com (29KB/640x360 vs 188KB/1600x1200).
+export function hqPhotoUrl(url, { width = 1600, height = 1000 } = {}) {
+  if (!url) return url;
+  return `${url}?impolicy=heightRate&rh=${height}&cw=${width}&ch=${height}&cg=Center`;
+}
+
 export function allPhotoUrls(car) {
   if (Array.isArray(car.Photos) && car.Photos.length > 0)
-    return car.Photos.map(p => 'https://ci.encar.com' + p.location);
+    return car.Photos.map(p => hqPhotoUrl('https://ci.encar.com' + p.location));
   if (car.Photo)
-    return ['https://ci.encar.com' + car.Photo + '001.jpg'];
+    return [hqPhotoUrl('https://ci.encar.com' + car.Photo + '001.jpg')];
   return [];
 }
 

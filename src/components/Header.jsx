@@ -75,12 +75,12 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b backdrop-blur-xl bg-[#060610]/80 border-white/[0.06]">
+      <header className="sticky top-0 z-50 border-b backdrop-blur-xl bg-white/75 border-black/[0.06]">
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center gap-2 h-14">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center group select-none flex-shrink-0 mr-2 bg-black rounded-lg px-2 py-1">
-            <img src="/logo.png" alt="AUTO VG" className="h-11 w-auto" />
+          <Link to="/" className="flex items-center group select-none flex-shrink-0 mr-2">
+            <img src="/logo.png" alt="Auto Korea Partner" className="h-11 w-auto" />
           </Link>
 
           {/* Search — desktop */}
@@ -105,7 +105,7 @@ export default function Header() {
                 onClick={() => setCountry('AL')}
                 title="Shqipëri – çmim Durrës"
                 className={`px-2.5 py-1.5 text-base leading-none transition-all
-                  ${country === 'AL' ? 'bg-red-600 shadow-[0_0_0_1px_rgba(220,38,38,0.4)]' : 'hover:bg-card2'}`}
+                  ${country === 'AL' ? 'bg-red-600 shadow-[0_0_0_1px_rgba(255,69,0,0.4)]' : 'hover:bg-card2'}`}
               >
                 🇦🇱
               </button>
@@ -113,7 +113,7 @@ export default function Header() {
                 onClick={() => setCountry('XK')}
                 title="Kosovë – çmim Prishtinë"
                 className={`px-2.5 py-1.5 text-base leading-none transition-all
-                  ${country === 'XK' ? 'bg-red-600 shadow-[0_0_0_1px_rgba(220,38,38,0.4)]' : 'hover:bg-card2'}`}
+                  ${country === 'XK' ? 'bg-red-600 shadow-[0_0_0_1px_rgba(255,69,0,0.4)]' : 'hover:bg-card2'}`}
               >
                 🇽🇰
               </button>
@@ -127,7 +127,7 @@ export default function Header() {
             {/* Mobile: search icon */}
             <button
               onClick={() => setShowSearch(s => !s)}
-              className="sm:hidden flex w-9 h-9 items-center justify-center rounded-xl btn-ghost text-base p-0"
+              className="sm:hidden flex w-9 h-9 items-center justify-center rounded-lg btn-ghost text-base p-0"
             >
               {showSearch ? <X className="w-4 h-4" /> : '🔍'}
             </button>
@@ -135,16 +135,16 @@ export default function Header() {
             {/* Mobile: burger → X when menu open */}
             <button
               onClick={() => setMenu(o => !o)}
-              className="sm:hidden flex w-9 h-9 items-center justify-center rounded-xl btn-ghost p-0"
+              className="sm:hidden flex w-9 h-9 items-center justify-center rounded-lg btn-ghost p-0"
               aria-label={menu ? 'Mbyll menunë' : 'Hap menunë'}
             >
               {menu ? (
                 <X className="w-5 h-5" style={{ color: 'var(--text-1)' }} />
               ) : (
                 <div className="flex flex-col justify-center gap-[6px]">
-                  <span style={{ display:'block', width:'22px', height:'3px', borderRadius:'3px', background:'linear-gradient(90deg,#ef4444,#dc2626)' }} />
-                  <span style={{ display:'block', width:'22px', height:'3px', borderRadius:'3px', background:'linear-gradient(90deg,#f87171,#dc2626)' }} />
-                  <span style={{ display:'block', width:'22px', height:'3px', borderRadius:'3px', background:'linear-gradient(90deg,#dc2626,#991b1b)' }} />
+                  <span style={{ display:'block', width:'22px', height:'3px', borderRadius:'3px', background:'linear-gradient(90deg,#FF7A44,#FF4500)' }} />
+                  <span style={{ display:'block', width:'22px', height:'3px', borderRadius:'3px', background:'linear-gradient(90deg,#FF6A2C,#FF4500)' }} />
+                  <span style={{ display:'block', width:'22px', height:'3px', borderRadius:'3px', background:'linear-gradient(90deg,#FF4500,#C23400)' }} />
                 </div>
               )}
             </button>

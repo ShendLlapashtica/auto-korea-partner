@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { carPhotoUrl, fmtEur, fmtKm, carYear, tr, trCity } from '../lib/utils.js';
+import { carPhotoUrl, hqPhotoUrl, fmtEur, fmtKm, carYear, tr, trCity } from '../lib/utils.js';
 import { translateFuel, translateTrans, translateColor } from '../lib/translations.js';
 import { useCountry } from '../contexts/CountryContext.jsx';
 
-const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='260'%3E%3Crect width='400' height='260' fill='%230a0a14'/%3E%3Ctext x='200' y='138' text-anchor='middle' fill='%23222240' font-size='13' font-family='sans-serif'%3EFoto nuk disponohet%3C/text%3E%3C/svg%3E";
+const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='260'%3E%3Crect width='400' height='260' fill='%23F8F9FA'/%3E%3Ctext x='200' y='138' text-anchor='middle' fill='%23C4C4CA' font-size='13' font-family='sans-serif'%3EFoto nuk disponohet%3C/text%3E%3C/svg%3E";
 
 const CONDITION_ALB = { Inspection: 'Inspektuar', Record: 'Histori', Resume: 'Raport', Warranty: 'Garanci' };
 
@@ -16,7 +16,9 @@ const FUEL_COLOR = {
 };
 
 export default function CarCard({ car }) {
-  const [imgSrc, setImgSrc] = useState(() => carPhotoUrl(car) || PLACEHOLDER);
+  const baseUrl = carPhotoUrl(car);
+  const [imgSrc, setImgSrc] = useState(() => hqPhotoUrl(baseUrl) || PLACEHOLDER);
+  const [triedBase, setTriedBase] = useState(false);
   const { priceFor, label } = useCountry();
 
   const year   = carYear(car);
@@ -38,10 +40,10 @@ export default function CarCard({ car }) {
     <Link
       to={`/car/${car.Id}`}
       state={{ car }}
-      className="group flex flex-col rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5 glass-card"
-      style={{ boxShadow: 'none', borderColor: 'rgba(220,38,38,0.12)' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(220,38,38,0.4)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(220,38,38,0.08)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(220,38,38,0.12)'; e.currentTarget.style.boxShadow = 'none'; }}
+      className="group flex flex-col rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-0.5 glass-card"
+      style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.05)', borderColor: 'var(--border)' }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,69,0,0.35)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(255,69,0,0.12)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)'; }}
     >
       {/* Photo */}
       <div className="relative overflow-hidden flex-shrink-0" style={{ aspectRatio: '16/10', background: 'var(--bg-card2)' }}>
@@ -49,8 +51,12 @@ export default function CarCard({ car }) {
           src={imgSrc}
           alt={`${maker} ${model}`}
           loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
-          onError={() => setImgSrc(PLACEHOLDER)}
+          onError={() => {
+            if (!triedBase && baseUrl) { setTriedBase(true); setImgSrc(baseUrl); }
+            else setImgSrc(PLACEHOLDER);
+          }}
         />
         {conditions.length > 0 && (
           <div className="absolute bottom-2 left-2 flex gap-1">
@@ -128,7 +134,7 @@ export default function CarCard({ car }) {
           )}
         </div>
 
-        <div style={{ background: 'linear-gradient(90deg, transparent, rgba(220,38,38,0.35), transparent)', height: '1px' }} />
+        <div style={{ background: 'linear-gradient(90deg, transparent, rgba(255,69,0,0.3), transparent)', height: '1px' }} />
 
         {/* Price */}
         <div className="flex items-end justify-between mt-auto">

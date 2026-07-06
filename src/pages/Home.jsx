@@ -340,7 +340,7 @@ export default function Home() {
                 <div key={title}
                   className="rounded-2xl p-5 transition-all group"
                   style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(220,38,38,0.2)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,69,0,0.25)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
                 >
                   <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center mb-3 group-hover:bg-red-500/15 transition-colors">
@@ -382,7 +382,7 @@ export default function Home() {
               <div key={title}
                 className="rounded-2xl p-6 transition-all group"
                 style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(220,38,38,0.2)'; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,69,0,0.25)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
               >
                 <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-500/15 transition-colors">

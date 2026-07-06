@@ -36,7 +36,7 @@ function Row({ label, value, mono, highlight }) {
     <div className="flex items-start py-2.5" style={{ borderBottom: '1px solid var(--border-lo)' }}>
       <span className="text-xs w-40 flex-shrink-0 pt-0.5" style={{ color: 'var(--text-3)' }}>{label}</span>
       <span className={`text-sm font-medium ${mono ? 'font-mono text-xs' : ''}`}
-        style={{ color: highlight ? '#f87171' : 'var(--text-2)' }}>
+        style={{ color: highlight ? '#E63E00' : 'var(--text-2)' }}>
         {value}
       </span>
     </div>
@@ -191,12 +191,12 @@ export default function CarDetail() {
                 <div className="flex flex-col gap-2 sm:w-56 flex-shrink-0">
                   <a href={`https://wa.me/${WHATSAPP}?text=${waMsg}`}
                      target="_blank" rel="noopener noreferrer"
-                     className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-white text-sm transition-all hover:brightness-110 active:scale-95"
+                     className="flex items-center justify-center gap-2 w-full py-3 rounded-lg font-bold text-white text-sm transition-all hover:brightness-110 active:scale-95"
                      style={{ background: 'linear-gradient(135deg,#25d366,#128c7e)' }}>
                     <MessageCircle className="w-4 h-4" />WhatsApp
                   </a>
                   <a href="tel:+38348407634"
-                     className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-semibold text-sm transition-all btn-ghost">
+                     className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg font-semibold text-sm transition-all btn-ghost">
                     <Phone className="w-4 h-4" />{PHONE_DISP}
                   </a>
                 </div>

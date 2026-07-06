@@ -17,10 +17,12 @@ export default function ImageGallery({ photos = [], alt = '' }) {
   return (
     <>
       {/* Main image */}
-      <div className="relative bg-[#08080f] rounded-2xl overflow-hidden aspect-[16/9]">
+      <div className="relative rounded-lg overflow-hidden aspect-[16/9]" style={{ background: 'var(--bg-card2)' }}>
         <img
           src={valid[active]}
           alt={alt}
+          loading="eager"
+          decoding="async"
           onError={() => setErrors(e => ({ ...e, [active]: true }))}
           onLoad={() => setLoaded(l => ({ ...l, [active]: true }))}
           className="w-full h-full object-cover cursor-zoom-in"
