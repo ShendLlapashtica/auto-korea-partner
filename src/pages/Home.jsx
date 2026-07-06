@@ -8,7 +8,7 @@ const PAGE_SIZE = 24;
 const EMPTY_FILTERS = {
   manufacturer: '', model: '', fuel: '', transmission: '', color: '',
   yearFrom: '', yearTo: '', mileageTo: '', priceFrom: '', priceTo: '',
-  sort: 'priceAsc',
+  sort: '',
 };
 
 const WHY_US = [
@@ -32,7 +32,7 @@ function filtersFromParams(params) {
     mileageTo:    params.get('kmMax')    || '',
     priceFrom:    params.get('priceFrom') || '',
     priceTo:      params.get('priceTo')   || '',
-    sort:         params.get('sort')     || 'priceAsc',
+    sort:         params.get('sort')     || '',
   };
 }
 

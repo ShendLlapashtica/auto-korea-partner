@@ -31,9 +31,9 @@ const COLORS = [
 ];
 
 const SORTS = [
+  { val: '',          label: 'Më të fundit' },
   { val: 'priceAsc',  label: 'Çmimi: I ulët → I lartë' },
   { val: 'priceDesc', label: 'Çmimi: I lartë → I ulët' },
-  { val: '',          label: 'Më të fundit' },
 ];
 
 const YEARS = Array.from({ length: 21 }, (_, i) => String(2025 - i));
@@ -51,7 +51,7 @@ const PRICES = [5000, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 10
 const EMPTY = {
   manufacturer: '', model: '', fuel: '', transmission: '', color: '',
   yearFrom: '', yearTo: '', mileageTo: '', priceFrom: '', priceTo: '',
-  sort: 'priceAsc',
+  sort: '',
 };
 
 function Sel({ label, value, onChange, disabled, children }) {
@@ -231,7 +231,7 @@ export default function Filters({ filters, onChange, forceOpen = false, onForceC
           <div className="relative">
             <select value={filters.sort} onChange={e => set('sort')(e.target.value)}
                     className="appearance-none text-xs rounded-lg pl-2.5 pr-6 py-1.5 font-medium"
-                    style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)', color: '#DC2626' }}>
+                    style={{ background: filters.sort ? 'rgba(220,38,38,0.08)' : 'var(--bg-input)', border: `1px solid ${filters.sort ? 'rgba(220,38,38,0.3)' : 'var(--border)'}`, color: filters.sort ? '#DC2626' : 'var(--text-3)' }}>
               {SORTS.map(s => <option key={s.val} value={s.val}>{s.label}</option>)}
             </select>
             <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none" style={{ color: 'var(--text-4)' }} />
